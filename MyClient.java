@@ -73,7 +73,6 @@ public class MyClient {
                     add(cells[i][j]);
                 }
             }
-
         setVisible(true);
 
             addKeyListener(new KeyAdapter() {
