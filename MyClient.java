@@ -61,7 +61,7 @@ public class MyClient {
         private final JLabel[][] cells = new JLabel[3][3];
         private final Set<String> pressedKeys = new HashSet<>();
 
-        public MyFrame() {
+        public MyFrame() {//TODO GUI関連
             setTitle("Game");
             setSize(300, 300);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
