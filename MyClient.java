@@ -99,6 +99,9 @@ public class MyClient {
                         case KeyEvent.VK_DOWN:
                             pressedKeys.add("down");
                             break;
+                        case KeyEvent.VK_SPACE:
+                            pressedKeys.add("bomb");
+                            break;
                     }
                 }
 
@@ -117,6 +120,9 @@ public class MyClient {
                         case KeyEvent.VK_DOWN:
                             pressedKeys.remove("down");
                             break;
+                        case KeyEvent.VK_SPACE:
+                            pressedKeys.remove("bomb");
+                            break;
                     }
                 }
             });
@@ -128,6 +134,7 @@ public class MyClient {
             if (pressedKeys.contains("down")) return "down";
             if (pressedKeys.contains("left")) return "left";
             if (pressedKeys.contains("right")) return "right";
+            if (pressedKeys.contains("bomb")) return "bomb";
             return "stopped";
         }
 
