@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MyServer {
     public static int N = 4;
+    public static int PLAYERS = 4;
     public static void main(String[] args) {
         final int PORT = 50505;
         
@@ -51,6 +52,9 @@ public class MyServer {
                                         case "down":
                                             player.moveDown();
                                             break;
+                                        case "bomb":
+                                            player.playerSetBomb();
+                                            break;
                                     }
                                 }
                             } catch (IOException e) {
@@ -79,6 +83,7 @@ public class MyServer {
 
     private static class MyGameBoard {
         private final int[][] board = new int[N][N];
+        private final String posture[] = new String[PLAYERS];
 
         public MyGameBoard() {
             for (int i = 0; i < board.length; i++) {
@@ -102,6 +107,14 @@ public class MyServer {
             board[x][y] = playerNumber;
         }
 
+        public synchronized void updatePosture(int playerNumber, String posture) {
+            this.posture[playerNumber] = posture;
+        }
+
+        public synchronized String getPosture(int playerNumber) {
+            return posture[playerNumber];
+        }
+
         public synchronized boolean move(int playerNumber, int x_before, int y_before, int x_after, int y_after) {
             if(board[x_after][y_after] == 0) {
                 board[x_after][y_after] = playerNumber;
@@ -109,6 +122,12 @@ public class MyServer {
                 return true;
             }
             return false;
+        }
+
+        public synchronized void setBomb(int x, int y) {
+            if(board[x][y] == 0) {
+                board[x][y] = -1;
+            }
         }
 
         private class MyPlayer {
@@ -128,6 +147,7 @@ public class MyServer {
                         y = newY;
                     }
                 }
+                updatePosture(playerNumber, "right");
             }
 
             public void moveLeft() {
@@ -137,6 +157,7 @@ public class MyServer {
                         y = newY;
                     }
                 }
+                updatePosture(playerNumber, "left");
             }
 
             public void moveUp() {
@@ -146,6 +167,7 @@ public class MyServer {
                         x = newX;
                     }
                 }
+                updatePosture(playerNumber, "up");
             }
 
             public void moveDown() {
@@ -155,6 +177,38 @@ public class MyServer {
                         x = newX;
                     }
                 }
+                updatePosture(playerNumber, "down");
+            }
+
+            public void playerSetBomb(){
+                int bombX, bombY;
+                switch(getPosture(playerNumber)){
+                    case "right":
+                        bombX = x;
+                        bombY = y + 1;
+                        break;
+                    case "left":
+                        bombX = x;
+                        bombY = y - 1;
+                        break;
+                    case "up":
+                        bombX = x - 1;
+                        bombY = y;
+                        break;
+                    case "down":
+                        bombX = x + 1;
+                        bombY = y;
+                        break;
+                    default:
+                        bombX = x;
+                        bombY = y;
+                        break;
+                }
+
+                if(0<= bombX && bombX < board.length && 0<= bombY && bombY < board.length) {
+                    setBomb(bombX, bombY);
+                }
+                
             }
         }
 
