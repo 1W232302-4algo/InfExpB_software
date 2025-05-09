@@ -130,6 +130,15 @@ public class MyServer {
             }
         }
 
+        public synchronized void setFire(int x, int y) {
+            if(board[x][y] == -1) {
+                if(x-1 >= 0) board[x-1][y] = -2;
+                if(x+1 < board.length) board[x+1][y] = -2;
+                if(y-1 >= 0) board[x][y-1] = -2;
+                if(y+1 < board.length) board[x][y+1] = -2;
+            }
+        }
+
         private class MyPlayer {
             private int playerNumber, x, y;
 
@@ -206,11 +215,35 @@ public class MyServer {
                 }
 
                 if(0<= bombX && bombX < board.length && 0<= bombY && bombY < board.length) {
-                    setBomb(bombX, bombY);
+                    new MyBomb(bombX, bombY).start();
                 }
                 
             }
         }
 
+        private class MyBomb{
+            private int x, y;
+
+            public MyBomb(int x, int y) {
+                this.x = x;
+                this.y = y;
+            }
+
+            public synchronized void start() {
+                Thread bombThread = new Thread(() -> {
+                    try {
+                        setBomb(x, y);
+                        Thread.sleep(1000);
+                        setFire(x, y);
+                    } catch (InterruptedException e) {
+                        System.err.println("error: " + e.getMessage());
+                    }
+                });
+                bombThread.start();
+            }
+
+        }
+
     }
 }
+
