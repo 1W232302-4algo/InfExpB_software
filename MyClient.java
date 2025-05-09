@@ -15,6 +15,8 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 public class MyClient {
+    public static int N = 4;
+
     public static void main(String[] args) {
         final String SERVER_IP = "localhost";
         final int PORT = 50505;
@@ -51,28 +53,34 @@ public class MyClient {
                 }
             });
             receiveThread.start();
+            try {
+                receiveThread.join();
+                socket.close();
+            } catch (InterruptedException e) {
+            }
 
         } catch (IOException e) {
-            e.printStackTrace();
-        }
+            System.err.println("error: " + e.getMessage());
+        } 
     }
 
     private static class MyFrame extends JFrame {
-        private final JLabel[][] cells = new JLabel[3][3];
+        private final JLabel[][] cells = new JLabel[N][N];
         private final Set<String> pressedKeys = new HashSet<>();
 
-        public MyFrame() {//TODO GUI関連
+        public MyFrame() {
             setTitle("Game");
             setSize(300, 300);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            setLayout(new GridLayout(3, 3));
+            setLayout(new GridLayout(N, N));
 
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
                     cells[i][j] = new JLabel("0", SwingConstants.CENTER);
                     add(cells[i][j]);
                 }
             }
+
         setVisible(true);
 
             addKeyListener(new KeyAdapter() {
@@ -124,7 +132,7 @@ public class MyClient {
         }
 
         public void showBoard(String boardData){
-            String[][] board = new String[3][3];
+            String[][] board = new String[N][N];
             String[] data = boardData.split(",");
             for (int i = 0; i < board.length; i++) {
                 for (int j = 0; j < board.length; j++) {

@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MyServer {
+    public static int N = 4;
     public static void main(String[] args) {
         final int PORT = 50505;
         
@@ -77,7 +78,7 @@ public class MyServer {
     }
 
     private static class MyGameBoard {
-        private final int[][] board = new int[3][3];
+        private final int[][] board = new int[N][N];
 
         public MyGameBoard() {
             for (int i = 0; i < board.length; i++) {
