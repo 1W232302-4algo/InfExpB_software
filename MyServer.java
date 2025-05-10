@@ -86,19 +86,16 @@ public class MyServer {
     private static class MyGameBoard {
         private MyPlayer[] players = new MyPlayer[PLAYERS];
         private final int[][] board = new int[N][N];
-        private final String posture[] = new String[PLAYERS];
         private final int bombRange = 3;
-        private final int bombTime = -5;
+        private final int bombDelay = 1000;//1000ms
+        private final int bombTime = -50;//5000ms
+        private final int waitTime = 5;//500ms
 
         public MyGameBoard() {
             for (int i = 0; i < board.length; i++) {
                 for (int j = 0; j < board.length; j++) {
                     board[i][j] = 0;
                 }
-            }
-
-            for (int i = 0; i < posture.length; i++) {
-                posture[i] = "right";
             }
         }
 
@@ -120,14 +117,6 @@ public class MyServer {
             board[x][y] = playerNumber;
         }
 
-        public synchronized void updatePosture(int playerNumber, String posture) {
-            this.posture[playerNumber%100] = posture;
-        }
-
-        public synchronized String getPosture(int playerNumber) {
-            return posture[playerNumber%100];
-        }
-
         public synchronized boolean move(int playerNumber, int x_before, int y_before, int x_after, int y_after) {
             if(board[x_after][y_after] == 0) {
                 board[x_after][y_after] = playerNumber;
@@ -147,7 +136,7 @@ public class MyServer {
             if(board[x][y] == 99) {
                 board[x][y] = bombTime;
                 for(int i=1; i<bombRange; i++) {
-                    if(x+i < board.length && board[x+i][y] == 0){
+                    if(x+i < board.length && board[x+i][y] <= 0){
                         board[x+i][y] = bombTime;
                     }else{
                         if(x+i < board.length && board[x+i][y] > 1000){
@@ -160,7 +149,7 @@ public class MyServer {
                     }
                 }
                 for(int i=1; i<bombRange; i++) {
-                    if(x-i >= 0 && board[x-i][y] == 0){
+                    if(x-i >= 0 && board[x-i][y] <= 0){
                         board[x-i][y] = bombTime;
                     }else{
                         if(x-i >= 0 && board[x-i][y] > 1000){
@@ -173,7 +162,7 @@ public class MyServer {
                     }
                 }
                 for(int i=1; i<bombRange; i++) {
-                    if(y+i < board.length && board[x][y+i] == 0){
+                    if(y+i < board.length && board[x][y+i] <= 0){
                         board[x][y+i] = bombTime;
                     }else{
                         if(y+i < board.length && board[x][y+i] > 1000){
@@ -186,7 +175,7 @@ public class MyServer {
                     }
                 }
                 for(int i=1; i<bombRange; i++) {
-                    if(y-i >= 0 && board[x][y-i] == 0){
+                    if(y-i >= 0 && board[x][y-i] <= 0){
                         board[x][y-i] = bombTime;
                     }else{
                         if(y-i >= 0 && board[x][y-i] > 1000){
@@ -211,9 +200,20 @@ public class MyServer {
             }
         }
 
+        public synchronized void clockPlayerWaitTime(){
+            for(int i=0; i<PLAYERS; i++){
+                if(players[i] != null && players[i].playerWaitTime > 0){
+                    players[i].playerWaitTime--;
+                }
+            }
+        }
+
         private class MyPlayer {
             private int playerNumber;
             private int x, y;
+            private String posture = "right";
+            private int playerWaitTime = 0;
+            private String playerCondition = "alive";
 
             public MyPlayer(int playerNumber, int x, int y) {
                 this.playerNumber = playerNumber;
@@ -228,74 +228,92 @@ public class MyServer {
             }
 
             public void moveRight() {
-                if(y != board.length - 1) {
-                    int newY = y + 1;
-                    if(move(playerNumber, x, y, x, newY)){
-                        y = newY;
+                if(playerWaitTime == 0 && playerCondition.equals("alive")){
+                    if(y != board.length - 1) {
+                        int newY = y + 1;
+                        if(move(playerNumber, x, y, x, newY)){
+                            y = newY;
+                        }
                     }
+                    posture = "right";
+
+                    playerWaitTime = waitTime;
                 }
-                updatePosture(playerNumber, "right");
             }
 
             public void moveLeft() {
-                if(y != 0) {
-                    int newY = y - 1;
-                    if(move(playerNumber, x, y, x, newY)){
-                        y = newY;
+                if(playerWaitTime == 0 && playerCondition.equals("alive")){
+                    if(y != 0) {
+                        int newY = y - 1;
+                        if(move(playerNumber, x, y, x, newY)){
+                            y = newY;
+                        }
                     }
+                    posture = "left";
+
+                    playerWaitTime = waitTime;
                 }
-                updatePosture(playerNumber, "left");
             }
 
             public void moveUp() {
-                if(x != 0) {
-                    int newX = x - 1;
-                    if(move(playerNumber, x, y, newX, y)){
-                        x = newX;
+                if(playerWaitTime == 0 && playerCondition.equals("alive")){
+                    if(x != 0) {
+                        int newX = x - 1;
+                        if(move(playerNumber, x, y, newX, y)){
+                            x = newX;
+                        }
                     }
+                    posture = "up";
+
+                    playerWaitTime = waitTime;
                 }
-                updatePosture(playerNumber, "up");
             }
 
             public void moveDown() {
-                if(x != board.length - 1) {
-                    int newX = x + 1;
-                    if(move(playerNumber, x, y, newX, y)){
-                        x = newX;
+                if(playerWaitTime == 0 && playerCondition.equals("alive")){
+                    if(x != board.length - 1) {
+                        int newX = x + 1;
+                        if(move(playerNumber, x, y, newX, y)){
+                            x = newX;
+                        }
                     }
+                    posture = "down";
+
+                    playerWaitTime = waitTime;
                 }
-                updatePosture(playerNumber, "down");
             }
 
             public void playerSetBomb(){
-                int bombX, bombY;
-                switch(getPosture(playerNumber)){
-                    case "right":
-                        bombX = x;
-                        bombY = y + 1;
-                        break;
-                    case "left":
-                        bombX = x;
-                        bombY = y - 1;
-                        break;
-                    case "up":
-                        bombX = x - 1;
-                        bombY = y;
-                        break;
-                    case "down":
-                        bombX = x + 1;
-                        bombY = y;
-                        break;
-                    default:
-                        bombX = x;
-                        bombY = y;
-                        break;
-                }
+                if(playerCondition.equals("alive")){
+                    int bombX, bombY;
+                    switch(posture){
+                        case "right":
+                            bombX = x;
+                            bombY = y + 1;
+                            break;
+                        case "left":
+                            bombX = x;
+                            bombY = y - 1;
+                            break;
+                        case "up":
+                            bombX = x - 1;
+                            bombY = y;
+                            break;
+                        case "down":
+                            bombX = x + 1;
+                            bombY = y;
+                            break;
+                        default:
+                            bombX = x;
+                            bombY = y;
+                            break;
+                    }
+                    if(0<= bombX && bombX < board.length && 0<= bombY && bombY < board.length) {
+                        new MyBomb(bombX, bombY).start();
+                    }
 
-                if(0<= bombX && bombX < board.length && 0<= bombY && bombY < board.length) {
-                    new MyBomb(bombX, bombY).start();
-                }
-                
+                    playerWaitTime = waitTime;
+                }                
             }
         }
 
@@ -311,7 +329,7 @@ public class MyServer {
                 Thread bombThread = new Thread(() -> {
                     try {
                         setBomb(x, y);
-                        Thread.sleep(1000);
+                        Thread.sleep(bombDelay);
                         setFire(x, y);
                     } catch (InterruptedException e) {
                         System.err.println("error: " + e.getMessage());
@@ -328,7 +346,8 @@ public class MyServer {
                     try {
                         while(true){
                             clockFire();
-                            Thread.sleep(1000);
+                            clockPlayerWaitTime();
+                            Thread.sleep(100);
                         }
                     } catch (InterruptedException e) {
                         System.err.println("error: " + e.getMessage());
