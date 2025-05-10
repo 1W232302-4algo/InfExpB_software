@@ -15,7 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 public class MyClient {
-    public static int N = 4;
+    public static int N = 11;
 
     public static void main(String[] args) {
         final String SERVER_IP = "localhost";
