@@ -39,7 +39,8 @@ public class MyClient {
                     String dir = frame.getDirection();
                     out.println(dir);
                 }
-            }, 0, 100);
+            }, 0, 10);
+            
 
             Thread receiveThread = new Thread(() -> {//receive 
                 try {
@@ -81,12 +82,15 @@ public class MyClient {
                 }
             }
 
-        setVisible(true);
+            setVisible(true);
 
             addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     switch (e.getKeyCode()) {
+                        case KeyEvent.VK_SPACE:
+                            pressedKeys.add("bomb");
+                            break;
                         case KeyEvent.VK_RIGHT:
                             pressedKeys.add("right");
                             break;
@@ -99,15 +103,15 @@ public class MyClient {
                         case KeyEvent.VK_DOWN:
                             pressedKeys.add("down");
                             break;
-                        case KeyEvent.VK_SPACE:
-                            pressedKeys.add("bomb");
-                            break;
                     }
                 }
 
                 @Override
                 public void keyReleased(KeyEvent e) {
                     switch (e.getKeyCode()) {
+                        case KeyEvent.VK_SPACE:
+                            pressedKeys.remove("bomb");
+                            break;
                         case KeyEvent.VK_RIGHT:
                             pressedKeys.remove("right");
                             break;
@@ -120,9 +124,6 @@ public class MyClient {
                         case KeyEvent.VK_DOWN:
                             pressedKeys.remove("down");
                             break;
-                        case KeyEvent.VK_SPACE:
-                            pressedKeys.remove("bomb");
-                            break;
                     }
                 }
             });
@@ -130,11 +131,11 @@ public class MyClient {
 
         public String getDirection() {
             if (pressedKeys.isEmpty()) return "stopped";
+            if (pressedKeys.contains("bomb")) return "bomb";
             if (pressedKeys.contains("up")) return "up";
             if (pressedKeys.contains("down")) return "down";
             if (pressedKeys.contains("left")) return "left";
             if (pressedKeys.contains("right")) return "right";
-            if (pressedKeys.contains("bomb")) return "bomb";
             return "stopped";
         }
 
