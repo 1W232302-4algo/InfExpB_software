@@ -1,4 +1,5 @@
 playerNumber: 1001_1004 (players' id = playerNumber % 100)
-bomb: 99
+item: 21_23
+bomb: 91_93
 fire: -50_-1
-injuredPlayer: 1101_1104
+injuredPlayer: 1101_1304
