@@ -18,6 +18,11 @@ public class MyClient {
     public static int N = 10;
 
     public static void main(String[] args) {
+        MyClient client = new MyClient();
+        client.start();
+    }
+
+    public void start() {
         final String SERVER_IP = "localhost";
         final int PORT = 50505;
 
@@ -33,19 +38,18 @@ public class MyClient {
             frame.requestFocus();
 
             java.util.Timer sendTimer = new java.util.Timer();
-            sendTimer.scheduleAtFixedRate(new TimerTask() {//send
+            sendTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     String dir = frame.getDirection();
                     out.println(dir);
                 }
             }, 0, 10);
-            
-            Thread receiveThread = new Thread(() -> {//receive 
+
+            Thread receiveThread = new Thread(() -> {
                 try {
                     String line;
                     while ((line = in.readLine()) != null) {
-                        //System.out.println("received: " + line);
                         frame.showBoard(line);
                     }
                 } catch (IOException e) {
@@ -53,18 +57,15 @@ public class MyClient {
                 }
             });
             receiveThread.start();
-            try {
-                receiveThread.join();
-                socket.close();
-            } catch (InterruptedException e) {
-            }
+            receiveThread.join();
+            socket.close();
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             System.err.println("error: " + e.getMessage());
-        } 
+        }
     }
 
-    private static class MyFrame extends JFrame {
+    private class MyFrame extends JFrame {
         private final JLabel[][] cells = new JLabel[N][N + 1]; //edit
         private final Set<String> pressedKeys = new HashSet<>();
 
